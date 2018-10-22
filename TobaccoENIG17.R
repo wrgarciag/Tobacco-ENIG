@@ -10,6 +10,8 @@ rm(list=ls())
 
 PathGD  <- paste0("H:/Mi unidad/02Work/5BIDTobacco/")
 
+
+
 # Directorios 
 LCode <- paste0(PathGD,"Code/")
 LData <- paste0(PathGD,"Data/")
