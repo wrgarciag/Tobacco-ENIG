@@ -10,8 +10,6 @@ rm(list=ls())
 
 PathGD  <- paste0("H:/Mi unidad/02Work/5BIDTobacco/")
 
-
-
 # Directorios 
 LCode <- paste0(PathGD,"Code/")
 LData <- paste0(PathGD,"Data/")
@@ -53,6 +51,8 @@ weighted.sum <-function(x, w){
 #                         2.1 Originales-----
 #////////////////////////////////////////////////////////////////////
 
+### Caracteristicas----
+
 ## Caracteristicas generales personas
 DTPers <- as.data.table(read.spss(paste0(LDEnig17,"Caracteristicas generales personas.sav"),
                                   to.data.frame = TRUE,use.value.labels = FALSE))
@@ -61,11 +61,71 @@ DTPers <- as.data.table(read.spss(paste0(LDEnig17,"Caracteristicas generales per
 DTVivi <- as.data.table(read.spss(paste0(LDEnig17,"Viviendas y hogares.sav"),
                     to.data.frame = TRUE,use.value.labels = FALSE))
 
+### Gastos diarios----
+
 ## Gastos diarios del hogar Urbano - Comidas preparadas fuera del hogar
+DTGDHUrbCom <- as.data.table(read.spss(
+  paste0(LDEnig17,"Gastos diarios del hogar Urbano - Comidas preparadas fuera del hogar.sav"),
+                                   to.data.frame = TRUE,use.value.labels = FALSE))
 
 ## Gastos diarios personales Urbano
 DTGDPUrb <- as.data.table(read.spss(paste0(LDEnig17,"Gastos diarios personales Urbano.sav"),
                                   to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos diarios Urbano - Capitulo C
+DTGDUrbC <- as.data.table(read.spss(paste0(LDEnig17,"Gastos diarios Urbano - Capitulo C.sav"),
+                                    to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos diarios Urbanos - Mercados
+DTGDUrbMerc <- as.data.table(read.spss(paste0(LDEnig17,"Gastos diarios Urbanos - Mercados.sav"),
+                                    to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos diarios Urbanos
+DTGDUrb <- as.data.table(read.spss(paste0(LDEnig17,"Gastos diarios Urbanos.sav"),
+                                       to.data.frame = TRUE,use.value.labels = FALSE))
+
+### Gastos personales----
+
+## Gastos personales Rural - Comidas preparadas fuera del Hogar
+DTGPRurCom <- as.data.table(read.spss(paste0(LDEnig17,"Gastos personales Rural - Comidas preparadas fuera del Hogar.sav"),
+                                   to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos personales Rural
+DTGPRur <- as.data.table(read.spss(paste0(LDEnig17,"Gastos personales Rural.sav"),
+                                      to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos personales Urbano - Comidas preparadas fuera del hogar
+
+DTGPUrb <- as.data.table(read.spss(paste0(LDEnig17,"Gastos personales Urbano - Comidas preparadas fuera del hogar.sav"),
+                                   to.data.frame = TRUE,use.value.labels = FALSE))
+
+### Gastos semanales----
+
+## Gastos semanales Rural - Capitulo C
+DTGSemRurC <- as.data.table(read.spss(paste0(LDEnig17,"Gastos semanales Rural - Capitulo C.sav"),
+                                   to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos semanales Rural - Comidas preparadas fuera del hogar
+DTGSemRurCom <- as.data.table(read.spss(paste0(LDEnig17,"Gastos semanales Rural - Comidas preparadas fuera del hogar.sav"),
+                                      to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos semanales Rurales - Mercados
+DTGSemRurMdos <- as.data.table(read.spss(paste0(LDEnig17,"Gastos semanales Rurales - Mercados.sav"),
+                                      to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos semanales Rurales
+DTGSemRur <- as.data.table(read.spss(paste0(LDEnig17,"Gastos semanales Rurales.sav"),
+                                         to.data.frame = TRUE,use.value.labels = FALSE))
+
+### Gastos menos frecuentes----
+
+## Gastos menos frecuentes - Articulos
+DTGNFreqA <- as.data.table(read.spss(paste0(LDEnig17,"Gastos menos frecuentes - Articulos.sav"),
+                                     to.data.frame = TRUE,use.value.labels = FALSE))
+
+## Gastos menos frecuentes - Medio de pago
+DTGNFreqMP <- as.data.table(read.spss(paste0(LDEnig17,"Gastos menos frecuentes - Medio de pago.sav"),
+                                     to.data.frame = TRUE,use.value.labels = FALSE))
 
 
 #////////////////////////////////////////////////////////////////////
@@ -103,9 +163,7 @@ DTGDPUrb[,dcigarrillo:=as.numeric(subclase=="022001")]
 #  La encuesta incluye pregunta de frecuencia
 
 ## Gastos diarios personales Urbano
-
 # Gasto y cantidades de cigarrillo y tabaco
-
 DCGUrb <- DTGDPUrb[,list(GastoTotal  = weighted.sum(x=NC4_CC_P5,
                                                     w=FEX_C),
                          ECigarrillo = weighted.sum(x=NC4_CC_P5[dcigarrillo==1],
