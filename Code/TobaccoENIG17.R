@@ -145,6 +145,22 @@ DTGDPUrb[,dtabaco:=as.numeric(division=="02")]
 # Dummy para cigarrillo
 DTGDPUrb[,dcigarrillo:=as.numeric(subclase=="022001")]
 
+# Mensualizar gasto
+
+DTGDPUrb[ ,ValorPgdoMes:=NC4_CC_P5]
+DTGDPUrb[ ,CantAdquMes:=NC4_CC_P2]
+
+DTGDPUrb[,ValorPgdoMes:=ifelse(NC4_CC_P6==1,ValorPgdoMes*4.28,ValorPgdoMes)]
+DTGDPUrb[,ValorPgdoMes:=ifelse(NC4_CC_P6==4,ValorPgdoMes*2,ValorPgdoMes)]
+DTGDPUrb[,ValorPgdoMes:=ifelse(NC4_CC_P6==6,ValorPgdoMes/2,ValorPgdoMes)]
+DTGDPUrb[,ValorPgdoMes:=ifelse(NC4_CC_P6==7,ValorPgdoMes/3,ValorPgdoMes)]
+
+DTGDPUrb[,CantAdquMes:=ifelse(NC4_CC_P6==1,CantAdquMes*4.28,CantAdquMes)]
+DTGDPUrb[,CantAdquMes:=ifelse(NC4_CC_P6==4,CantAdquMes*2,CantAdquMes)]
+DTGDPUrb[,CantAdquMes:=ifelse(NC4_CC_P6==6,CantAdquMes/2,CantAdquMes)]
+DTGDPUrb[,CantAdquMes:=ifelse(NC4_CC_P6==7,CantAdquMes/3,CantAdquMes)]
+
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #                         3. RESULTADOS-----
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,13 +185,23 @@ DCGUrb <- DTGDPUrb[,list(GastoTotal  = weighted.sum(x=NC4_CC_P5,
                          ECigarrillo = weighted.sum(x=NC4_CC_P5[dcigarrillo==1],
                                                     w=FEX_C[dcigarrillo==1]),
                          QCigarrillo = weighted.sum(x=NC4_CC_P2[dcigarrillo==1],
-                                                    w=FEX_C[dcigarrillo==1])),
+                                                    w=FEX_C[dcigarrillo==1]),
+                         GastoTotalMes  = weighted.sum(x=ValorPgdoMes,
+                                                       w=FEX_C),
+                         ECigarrilloMes = weighted.sum(x=ValorPgdoMes[dcigarrillo==1],
+                                                       w=FEX_C[dcigarrillo==1]),
+                         QCigarrilloMes = weighted.sum(x=CantAdquMes[dcigarrillo==1],
+                                                       w=FEX_C[dcigarrillo==1])),
                          by=list()]
 
 # Gasto como porcentaje del total
 DCGUrb[,Wcigarrillo:=ECigarrillo/GastoTotal*100]
 # Precio implicito
 DCGUrb[,Pcigarrillo:=ECigarrillo/QCigarrillo]
+# Gasto como porcentaje del total (Mes)
+DCGUrb[,WcigarrilloMes:=ECigarrilloMes/GastoTotalMes*100]
+# Precio implicito (Mes)
+DCGUrb[,PcigarrilloMes:=ECigarrilloMes/QCigarrilloMes]
 # Guardar
 write.csv(DCGUrb,file = paste0(LResu,"1DCGastoUrbDiarioEnig17.csv"), row.names = FALSE, na="")
 
