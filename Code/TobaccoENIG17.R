@@ -132,6 +132,16 @@ DTGDPUrb <- as.data.table(read.spss(paste0(LDEnig17,"Gastos diarios personales U
 #                         2.2 Procesados-----
 #////////////////////////////////////////////////////////////////////
 
+## Personas----
+
+NamesPers <- c("DIRECTORIO","ORDEN",
+               "P6020","P6040","P6050","P6210","P6210S1","P6210S2")  
+
+DPPers <- DTPers[,colnames(DTPers) %in% NamesPers,with=FALSE]
+
+#Limpiar
+rm(NamesPers)
+
 ## Viviendas----
 
 NamesVivi <- c("VIVIENDA","DIRECTORIO",
@@ -175,6 +185,9 @@ DTGDPUrb[,CantAdquMes:=ifelse(NC4_CC_P6==7,CantAdquMes/3,CantAdquMes)]
 
 DPGDPUrb <- merge(DTGDPUrb,DPVivi,
                   by=c("DIRECTORIO"),all.x=TRUE)
+
+DPGDPUrb <- merge(DPGDPUrb,DPPers,
+                  by=c("DIRECTORIO","ORDEN"),all.x=TRUE)
 
 
 ## Gastos diarios personales Rural
@@ -221,7 +234,10 @@ DTGPRur[,CantAdquMes:=ifelse(NC2R_CE_P8==7,CantAdquMes/3,CantAdquMes)]
 #  La encuesta incluye pregunta de frecuencia
 
 ## Gastos diarios personales Urbano
+
 # Gasto y cantidades de cigarrillo y tabaco
+
+# Total-----
 DCGUrb <- DTGDPUrb[,list(GastoTotal  = weighted.sum(x=NC4_CC_P5,
                                                     w=FEX_C),
                          ECigarrillo = weighted.sum(x=NC4_CC_P5[dcigarrillo==1],
@@ -273,6 +289,76 @@ DCGRur[,WcigarrilloMes:=ECigarrilloMes/GastoTotalMes*100]
 DCGRur[,PcigarrilloMes:=ECigarrilloMes/QCigarrilloMes]
 # Guardar
 write.csv(DCGRur,file = paste0(LResu,"1DCGastoRurDiarioEnig17.csv"), row.names = FALSE, na="")
+
+## Educacion----
+
+DC <- DPGDPUrb[,list(GastoTotal  = weighted.sum(x=NC4_CC_P5,
+                                                w=FEX_C),
+                     ECigarrillo = weighted.sum(x=NC4_CC_P5[dcigarrillo==1],
+                                                w=FEX_C[dcigarrillo==1]),
+                     QCigarrillo = weighted.sum(x=NC4_CC_P2[dcigarrillo==1],
+                                                w=FEX_C[dcigarrillo==1]),
+                     GastoTotalMes  = weighted.sum(x=ValorPgdoMes,
+                                                   w=FEX_C),
+                     ECigarrilloMes = weighted.sum(x=ValorPgdoMes[dcigarrillo==1],
+                                                   w=FEX_C[dcigarrillo==1]),
+                     QCigarrilloMes = weighted.sum(x=CantAdquMes[dcigarrillo==1],
+                                                   w=FEX_C[dcigarrillo==1])),
+                     by=list(P6210)]
+
+DC <- DC[(P6210 %in% c(1:6)),]
+
+
+DC[,NivelEduc:="1Ninguno"]
+DC[,NivelEduc:=ifelse(P6210==2,"2Preescolar",NivelEduc)]
+DC[,NivelEduc:=ifelse(P6210==3,"3Primaria",NivelEduc)]
+DC[,NivelEduc:=ifelse(P6210==4,"4Secundaria",NivelEduc)]
+DC[,NivelEduc:=ifelse(P6210==5,"5Media",NivelEduc)]
+DC[,NivelEduc:=ifelse(P6210==6,"6Superior",NivelEduc)]
+
+# Gasto como porcentaje del total
+DC[,Wcigarrillo:=ECigarrillo/GastoTotal*100]
+# Precio implicito
+DC[,Pcigarrillo:=ECigarrillo/QCigarrillo]
+# Gasto como porcentaje del total (Mes)
+DC[,WcigarrilloMes:=ECigarrilloMes/GastoTotalMes*100]
+# Precio implicito (Mes)
+DC[,PcigarrilloMes:=ECigarrilloMes/QCigarrilloMes]
+# Guardar
+write.csv(DC,file = paste0(LResu,"1DCGUrbEducEnig17.csv"), row.names = FALSE, na="")
+
+## Estrato----
+
+DC <- DPGDPUrb[,list(GastoTotal  = weighted.sum(x=NC4_CC_P5,
+                                                w=FEX_C),
+                     ECigarrillo = weighted.sum(x=NC4_CC_P5[dcigarrillo==1],
+                                                w=FEX_C[dcigarrillo==1]),
+                     QCigarrillo = weighted.sum(x=NC4_CC_P2[dcigarrillo==1],
+                                                w=FEX_C[dcigarrillo==1]),
+                     GastoTotalMes  = weighted.sum(x=ValorPgdoMes,
+                                                   w=FEX_C),
+                     ECigarrilloMes = weighted.sum(x=ValorPgdoMes[dcigarrillo==1],
+                                                   w=FEX_C[dcigarrillo==1]),
+                     QCigarrilloMes = weighted.sum(x=CantAdquMes[dcigarrillo==1],
+                                                   w=FEX_C[dcigarrillo==1])),
+                     by=list(P8520S1A1)]
+
+DC[,P8520S1A1:=as.numeric(as.character(P8520S1A1))]
+
+DC <- DC[(!P8520S1A1 %in% c(9)),]
+
+DC <- DC[!is.na(P8520S1A1),]
+
+# Gasto como porcentaje del total
+DC[,Wcigarrillo:=ECigarrillo/GastoTotal*100]
+# Precio implicito
+DC[,Pcigarrillo:=ECigarrillo/QCigarrillo]
+# Gasto como porcentaje del total (Mes)
+DC[,WcigarrilloMes:=ECigarrilloMes/GastoTotalMes*100]
+# Precio implicito (Mes)
+DC[,PcigarrilloMes:=ECigarrilloMes/QCigarrilloMes]
+# Guardar
+write.csv(DC,file = paste0(LResu,"1DCGUrbEstratoEnig17.csv"), row.names = FALSE, na="")
 
 
 ## Region----
@@ -335,6 +421,24 @@ write.csv(DC,file = paste0(LResu,"1DCGUrbCanalEnig17.csv"), row.names = FALSE, n
 #                         3.2 Visualizacion-----
 #////////////////////////////////////////////////////////////////////
 
+## Educacion---
+
+DG <- fread(paste0(LResu,"1DCGUrbEducEnig17.csv"))
+
+g <- ggplot(DG,aes(x=NivelEduc, y=PcigarrilloMes))
+g <- g + labs(x="", y="Pesos")
+g <- g + geom_bar(colour="blue", stat="identity",fill="steelblue") 
+g <- g + coord_flip()
+g <- g + guides(fill=FALSE)
+#g <- g + theme_minimal(base_size = 7, base_family = "Helvetica")
+g <- g + theme( aspect.ratio=1)
+g <- g + theme(plot.margin = unit(c(0,0,0,0), "cm"))
+g <- g + geom_text(aes(label=format(as.numeric(round(PcigarrilloMes,0)),  
+                                    decimal.mark=",",   big.mark=".",small.mark=".")), 
+                   hjust=1.6, color="white", size=5)
+g
+
+ggsave(paste0(LResu,"1DGGUrbEducEnig17.png"), width = 16, height = 7)
 
 ## Region---
 
@@ -348,8 +452,10 @@ g <- g + guides(fill=FALSE)
 #g <- g + theme_minimal(base_size = 7, base_family = "Helvetica")
 g <- g + theme( aspect.ratio=1)
 g <- g + theme(plot.margin = unit(c(0,0,0,0), "cm"))
-g <- g + geom_text(aes(label=format(as.numeric(round(PcigarrilloMes,0)),  decimal.mark=",",   big.mark=".",small.mark=".")), hjust=1.6, color="white", size=5)
+g <- g + geom_text(aes(label=format(as.numeric(round(PcigarrilloMes,0)),  
+         decimal.mark=",",   big.mark=".",small.mark=".")), 
+         hjust=1.6, color="white", size=5)
 g
 
-ggsave(paste0(LResu,"1DGGUrbRegionEnig17.png"))
+ggsave(paste0(LResu,"1DGGUrbRegionEnig17.png"), width = 16, height = 7)
 
